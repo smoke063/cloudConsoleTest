@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import AddData from './components/AddData'
-import Logs from './components/Logs'
-import DataView from './components/DataView'
+import AddData from './pages/AddData'
+import Logs from './pages/Logs'
+import DataView from './pages/DataView'
 
 Vue.use(Router)
 

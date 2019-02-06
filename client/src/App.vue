@@ -2,9 +2,9 @@
   <div id="app" class="form-application">
 
     <SideBar class="form-application__sidebar"/>
-
-    <router-view class="form-application__content"></router-view>
-
+    <keep-alive>
+      <router-view class="form-application__content"></router-view>
+    </keep-alive>
   </div>
 </template>
 

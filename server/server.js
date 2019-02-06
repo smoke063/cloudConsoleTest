@@ -1,8 +1,23 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const app = express();
+const router = require('./routes/routes')
+//socket config
+const socketIO = require('socket.io');
+const server = express()
+    .use(app)
+    .listen(3000, () => console.log('Listening Socket on ${ PORT }'));
+const io = socketIO(server);
 
-var store = require('./store');
+const redis = require("async-redis");
+const client = redis.createClient();
+
+client.on("error", function (err) {
+    console.log("Error " + err);
+});
+
+//const Entry = require('./entry');
 
 if (app.get('env') === 'development') {
     console.log('mode => ' + app.get('env'));
@@ -11,41 +26,43 @@ if (app.get('env') === 'development') {
 //app.set('views', __dirname + '/views');
 //app.use(express.static(__dirname + "/public"));
 
-var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-
-    if ('OPTIONS' == req.method) {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
+const corsOptions = {
+    origin: 'http://localhost:8080',
+    credentials: true,
 };
-
-app.use(allowCrossDomain);
+//for develope mode
+app.use(cors(corsOptions));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 
-app.get('/api/entries', function(req, res){
-    //var userName = req.body.title;
-    //var userAge = req.body.text;
-    //debugger;
-    res.send('get data');
+io.on('connection', function (socket) {
+    socket.emit('news', {hello: 'world'});
+    socket.on('my other event', function (data) {
+        console.log(data);
+    });
 });
 
-app.get('/api/logs', function(req, res){
-    res.send('hello world');
+app.get('/api/entries', async function(req, res){
+    let entries = await client.hvals('entries');
+    entries = entries.map((entry) => JSON.parse(entry));
+    res.status(200).json(entries);
 });
 
-app.post('/api/entry', function(req, res){
-    //var title = req.body.title;
-    //var text = req.body.text;
-    //res.send('hello world');
+app.post('/api/entry', router.postEntry);
+
+app.get('/api/logs', async function(req, res){
+    const logs = await client.hgetall('logs');
+    res.status(200).json(logs);
 });
 
-app.listen(3000, function () {
-    store.connect();
-    console.log('Server running port => 3000');
+app.post('/api/log', function(req, res){
+    const { eventType, eventTime} = req.body;
+    client.hset('logs', eventTime, eventType);
+    res.status(200).end();
+});
+
+app.use(function(err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).send('Express error!');
 });

@@ -7,33 +7,35 @@
 </template>
 
 <script>
-import axios from 'axios'
+  import { postEntry } from '../api/api'
 
-var port = 3000
-axios.defaults.baseURL = location.protocol + '//' + location.hostname + ':' + port
-
-export default {
-  name: 'AddData',
-  data: function () {
-    return {
-      title: '',
-      text: ''
-    }
-  },
-  methods: {
-    addData() {
-      axios.post('/api/data', {
-        title: this.title,
-        text: this.text
-      }).then(function () {
-        this.title = ''
-        this.text = ''
-      }).catch(function (error) {
-        console.log(error);
-      })
+  export default {
+    name: 'AddData',
+    data: function () {
+      return {
+        title: '',
+        text: ''
+      }
+    },
+    methods: {
+      addData() {
+        postEntry({
+          entry: {
+            title: this.title,
+            text: this.text
+          },
+          eventType: 'dataAdded',
+          eventTime: +new Date
+        })
+          .then(() => {
+            debugger
+            this.title = ''
+            this.text = ''
+          })
+          .catch((error) => alert(error))
+      }
     }
   }
-}
 </script>
 
 <style lang="css">
