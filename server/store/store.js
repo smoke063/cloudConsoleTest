@@ -13,8 +13,8 @@ const saveEntry = async (entry) => {
 const getEntries = async () => {
     let entries = await client.hvals('entries');
     return entries.map((item) => {
-        let { entry, id } = JSON.parse(item)
-        entry.id = id
+        let { entry, id } = JSON.parse(item);
+        entry.id = id;
         return entry
     });
 };
@@ -24,9 +24,8 @@ const getLogs = async () => {
 };
 
 const saveLog = async ({ eventTime, eventType }) => {
-    return await client.hset('logs', eventTime, eventType);;
+    return await client.hset('logs', eventTime, eventType);
 };
-
 
 module.exports = {
     saveEntry: saveEntry,
