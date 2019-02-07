@@ -18,10 +18,7 @@
 </template>
 
 <script>
-  import { getData } from '../api/api'
-  import io from 'socket.io-client'
-
-  const socket = io.connect('http://localhost:3000')//io(location.protocol + '//' + location.hostname + ':' + 3000)
+  import { getData, socket } from '../api/api'
 
   export default {
     name: "Logs",
@@ -32,18 +29,20 @@
     },
     mounted() {
       this.fetchData()
-
-      socket.on('news', function (data) {
-        console.log(data);
-        socket.emit('my other event', { my: 'data' });
-      })
+      socket.on('dataAdded', this.pushData)
+    },
+    beforeDestroy() {
+      socket.off('dataAdded', this.pushData)
     },
     methods: {
+      pushData({ entry }){
+        this.entries.push(entry)
+      },
       fetchData() {
         const vm = this
         getData()
-          .then(({data = []}) => {
-            vm.entries = data
+          .then(({ data }) => {
+            vm.entries = data || []
           })
           .catch((error) => alert(error))
       }

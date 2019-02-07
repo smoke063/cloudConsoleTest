@@ -47,5 +47,6 @@
   .form-application__content {
     width: 70%;
     margin-left: 0;
+    overflow: auto;
   }
 </style>

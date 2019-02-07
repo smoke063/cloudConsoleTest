@@ -1,12 +1,21 @@
 import axios from 'axios'
+import uuid from 'uuid/v1'
+import io from 'socket.io-client'
 
 axios.defaults.baseURL = location.protocol + '//' + location.hostname + ':' + 3000
 
+export const socket = io(location.protocol + '//' + location.hostname + ':' + 3000)
+
 export const postEntry = (entry) => {
+  entry.id = uuid()
   return axios.post('/api/entry', {
-    entry: entry,
-    eventType: 'dataAdded',
-    eventTime: +new Date
+    entry
+  })
+}
+
+export const postLog = (log) => {
+  return axios.post('/api/log', {
+    log
   })
 }
 

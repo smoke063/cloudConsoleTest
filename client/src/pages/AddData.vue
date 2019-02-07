@@ -2,12 +2,12 @@
   <div class="form-add-data">
     <input class="form-add-data__input" type="text" v-model="title" placeholder="Title" />
     <textarea class="form-add-data__textarea" v-model="text" placeholder="Text"></textarea>
-    <button class="form-add-data__button" type="button" v-on:click="addData">Add</button>
+    <button class="form-add-data__button" v-bind:disabled="disabled" type="button" v-on:click="addData">Add</button>
   </div>
 </template>
 
 <script>
-  import { postEntry } from '../api/api'
+  import { postEntry, postLog } from '../api/api'
 
   export default {
     name: 'AddData',
@@ -17,20 +17,29 @@
         text: ''
       }
     },
+    mounted() {
+      this.postLog()
+    },
+    computed: {
+      disabled() {
+        return !this.text || !this.title
+      }
+    },
     methods: {
+      postLog() {
+        postLog({ eventTime: +new Date(), eventType: 'login' }).catch((error) => alert(error))
+      },
       addData() {
+        const vm = this;
         postEntry({
           entry: {
             title: this.title,
             text: this.text
-          },
-          eventType: 'dataAdded',
-          eventTime: +new Date
+          }
         })
           .then(() => {
-            debugger
-            this.title = ''
-            this.text = ''
+            vm.title = ''
+            vm.text = ''
           })
           .catch((error) => alert(error))
       }
@@ -49,5 +58,11 @@
   }
   .form-add-data__textarea {
     margin: 20px;
+    height: 200px;
+    resize: none;
+  }
+  .form-add-data__button {
+    width: 100px;
+    align-self: center;
   }
 </style>

@@ -10,7 +10,7 @@
       <tbody>
       <tr v-for="log in logs" :key="log.id">
         <td>{{log.eventType}}</td>
-        <td>{{log.time}}</td>
+        <td>{{log.eventTime}}</td>
       </tr>
       </tbody>
     </table>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-  import { getLogs } from '../api/api'
+  import { getLogs, socket } from '../api/api'
 
   export default {
     name: "Logs",
@@ -29,17 +29,27 @@
     },
     mounted() {
       this.fetchLogs()
+      socket.on('logAdded', this.pushData)
+    },
+    beforeDestroy() {
+      socket.off('logAdded', this.pushData)
     },
     methods: {
+      pushData({ eventTime, eventType }){
+        this.logs.push( {
+          id: eventTime + '',
+          eventTime: new Date(eventTime).toLocaleString(),
+          eventType: eventType
+        })
+      },
       fetchLogs() {
         const vm = this
         getLogs()
-          .then(({data = []}) => {
-            debugger
-            vm.logs = Object.keys(data).map(function (key) {
+          .then(({ data }) => {
+            vm.logs = Object.keys(data || []).map(function (key) {
               return {
                 id: key,
-                time: new Date(+key).toLocaleString(),
+                eventTime: new Date(+key).toLocaleString(),
                 eventType: data[key]
               }
             })
